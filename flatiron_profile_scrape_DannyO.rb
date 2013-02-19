@@ -111,11 +111,11 @@ pp profile
 # add each student's profile info into a hash
    # site = { 
         # :anabecker.html => {
-                              # :person's name => ana_becker
+                              # :name => ana_becker
                               # :bio =>
                               # :aspirations =>
                               # :interests =>
-                              # :social media links => []
+                              # :social_media_links => []
                               # :work =>
                               # :education =>
                               # :misc => }

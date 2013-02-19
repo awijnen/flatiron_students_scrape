@@ -4,19 +4,19 @@ require 'pp'
 require "sqlite3"
 require 'pry'
 
-# Create database
-DB = SQLite3::Database.new "profile_scrape.db"
+# # Create database
+# DB = SQLite3::Database.new "profile_scrape.db"
 
-rows = DB.execute <<-SQL
-  CREATE TABLE students (
-    id integer PRIMARY KEY,
-    name varchar(255),
-    bio varchar(255),
-    aspirations varchar(255),
-    tagline varchar(255),
-    work varchar(255)
-  );
-SQL
+# rows = DB.execute <<-SQL
+#   CREATE TABLE students (
+#     id integer PRIMARY KEY,
+#     name varchar(255),
+#     bio varchar(255),
+#     aspirations varchar(255),
+#     tagline varchar(255),
+#     work varchar(255)
+#   );
+# SQL
 
 
 # Scrape class
@@ -90,10 +90,10 @@ end
 class Student
   attr_accessor :name, :bio, :aspirations, :tagline, :work
 
-  @students = []
+  @@students = []
 
   def self.all
-    @students
+    @@students
   end
 
   def initialize(values_hash)
@@ -103,13 +103,13 @@ class Student
       # self.save
       self.class.all << self # add instance to @students array
     end
-    self.save  
+    # self.save  
   end
 
-  def save
-    DB.execute("INSERT INTO students (name, bio, aspirations, tagline, work)
-            VALUES (?, ?, ?, ?, ?)", [self.name, self.bio, self.aspirations, self.tagline, self.work])
-  end
+  # def save
+  #   DB.execute("INSERT INTO students (name, bio, aspirations, tagline, work)
+  #           VALUES (?, ?, ?, ?, ?)", [self.name, self.bio, self.aspirations, self.tagline, self.work])
+  # end
 
 end
 
