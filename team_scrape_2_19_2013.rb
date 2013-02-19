@@ -2,6 +2,8 @@ require 'open-uri'
 require 'nokogiri'
 require 'pp'
 
+###################################################################
+
 class Scrape
   
   attr_accessor :url, :student_link_array, :student_doc_array, :student_data_array
@@ -53,6 +55,7 @@ class Scrape
     get_aspirations_data(student_doc)
     get_social_media_links_data(student_doc)
     add_student_to_array
+    create_student
   end
 
   def get_name_data(student_doc)
@@ -60,15 +63,18 @@ class Scrape
     @name_data = student_doc.css(@name_selector).text
   end
 
+
   def get_bio_data(student_doc)
     @bio_selector = "div.two_third.last h2 + p"
     @bio_data = student_doc.css(@bio_selector).text
   end
 
+
   def get_aspirations_data(student_doc)
     @aspirations_selector = "div.two_third.last h3:nth-child(4) + p"
     @aspirations_data = student_doc.css(@aspirations_selector).text
   end
+
 
   def get_social_media_links_data(student_doc)
     @social_media_links_selector = "div.social_icons i"
@@ -81,6 +87,7 @@ class Scrape
       end
     end
   end
+
 
   def add_student_to_array
     student_hash = {
@@ -95,6 +102,13 @@ class Scrape
      
   end
 
+
+  def create_student
+    individual_student_data_array = [@name_data, @bio_data, @aspirations_data, @social_media_links_data]
+    Student.new(individual_student_data_array)
+  end
+
+
   def run
     get_index_nokogiri
     get_student_link_array
@@ -103,3 +117,68 @@ class Scrape
   end
 
 end
+
+###################################################################
+
+class Student
+
+  ATTRIBUTES = {
+    :id => :integer,
+    :name => :text,
+    :bio => :text,
+    :aspirations => :text,
+    :social_media_links => :text
+  }
+
+  @students = []
+
+  def self.all
+    @students
+  end
+
+  @@db = SQLite3::Database.new('scrape.db')
+
+  ATTRIBUTES.each do |attribute, type|
+    attr_accessor attribute
+  end
+ 
+  def self.attributes
+    ATTRIBUTES.keys
+  end
+ 
+  def self.attributes_hash
+    ATTRIBUTES
+  end
+ 
+  def self.table_name
+    "students"
+  end
+ 
+  @tableName = self.table_name
+ 
+  def self.columns_for_sql
+    self.attributes_hash.collect { |k, v| "#{k.to_s.downcase} #{v.to_s.upcase}" }.join(",")
+  end
+
+
+  def self.create_table
+    @@db.execute "CREATE TABLE IF NOT EXISTS students (#{self.columns_for_sql});"
+  end
+ 
+  def self.initialize
+    self.create_table
+  end
+ 
+  def initialize(student_data)
+    @name, @bio, @aspirations, @social_media_links = student_data
+    self.class.all << self
+  end
+
+end
+
+###################################################################
+
+# Run it #
+scrape = Scrape.new
+scrape.run
+Student.all.size
