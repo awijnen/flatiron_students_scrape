@@ -1,6 +1,8 @@
-require 'open-uri'
 require 'nokogiri'
+require 'open-uri'
 require 'pp'
+require "sqlite3"
+require 'pry'
 
 ###################################################################
 
@@ -122,6 +124,8 @@ end
 
 class Student
 
+  # attr_accessor :name, :bio, :aspirations, :social_media_links
+
   ATTRIBUTES = {
     :id => :integer,
     :name => :text,
@@ -165,20 +169,69 @@ class Student
     @@db.execute "CREATE TABLE IF NOT EXISTS students (#{self.columns_for_sql});"
   end
  
-  def self.initialize
-    self.create_table
-  end
- 
+  self.create_table
+
+
   def initialize(student_data)
     @name, @bio, @aspirations, @social_media_links = student_data
     self.class.all << self
   end
 
+
+
+
 end
 
-###################################################################
+# ###################################################################
+
+#   ATTRIBUTES = {
+#     :id => :integer,
+#     :name => :text,
+#     :bio => :text,
+#     :aspirations => :text,
+#     :social_media_links => :text
+#   }
+
+#   @@db = SQLite3::Database.new('scrape.db')
+
+#   ATTRIBUTES.each do |attribute, type|
+#     attr_accessor attribute
+#   end
+ 
+#   def self.attributes
+#     ATTRIBUTES.keys
+#   end
+ 
+#   def self.attributes_hash
+#     ATTRIBUTES
+#   end
+ 
+#   def self.table_name
+#     "students"
+#   end
+ 
+#   @tableName = self.table_name
+ 
+#   def self.columns_for_sql
+#     self.attributes_hash.collect { |k, v| "#{k.to_s.downcase} #{v.to_s.upcase}" }.join(",")
+#   end
+
+
+#   def self.create_table
+#     @@db.execute "CREATE TABLE IF NOT EXISTS students (#{self.columns_for_sql});"
+#   end
+ 
+#   self.create_table
+
+#   ###################################################################
 
 # Run it #
 scrape = Scrape.new
 scrape.run
-Student.all.size
+
+###################################################################
+
+# Pry it # 
+binding.pry
+
+###################################################################
