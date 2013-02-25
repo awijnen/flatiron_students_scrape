@@ -43,22 +43,20 @@ class Scrape
   # end
 
   def get_all_student_data # iterator method, iterate over every student in the student_data_array
-    @student_id = 0
     @student_data_array = []
     
     @student_doc_array.each do |student_doc|
-      add_student(student_doc, @student_id)
-      @student_id += 1
+      add_student(student_doc)
     end
 
   end
 
-  def add_student(student_doc, student_id) # add one student
+  def add_student(student_doc) # add one student
     get_name_data(student_doc)
     get_bio_data(student_doc)
     get_aspirations_data(student_doc)
     get_social_media_links_data(student_doc)
-    add_student_to_array(student_id)
+    add_student_to_array
     create_student
   end
 
@@ -93,10 +91,9 @@ class Scrape
   end
 
 
-  def add_student_to_array(student_id) # aggregate the data of one student and add the entire student to an array
+  def add_student_to_array # aggregate the data of one student and add the entire student to an array
     student_hash = {
       @name_data.to_sym => {
-        :student_id => student_id,
         :bio => @bio_data,
         :aspirations => @aspirations_data,
         :social_media_links => @social_media_links_data
@@ -200,10 +197,13 @@ class Student
   end
 
   def self.find_by_name(name)
-    database_return = @@db.execute( "SELECT name
-                         FROM (#{@tableName})
-                         WHERE name='#{name}'" )
-    database_return[0][0]
+    self.all.each_with_index do |student, index|
+      if student.name == name
+        return student.name
+      else
+        puts "Name not found."
+      end
+    end
   end
 
   def self.flush_database
