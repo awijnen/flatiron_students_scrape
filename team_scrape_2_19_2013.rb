@@ -43,20 +43,22 @@ class Scrape
   # end
 
   def get_all_student_data # iterator method, iterate over every student in the student_data_array
+    @student_id = 0
     @student_data_array = []
     
     @student_doc_array.each do |student_doc|
-      add_student(student_doc)
+      add_student(student_doc, @student_id)
+      @student_id += 1
     end
 
   end
 
-  def add_student(student_doc) # add one student
+  def add_student(student_doc, student_id) # add one student
     get_name_data(student_doc)
     get_bio_data(student_doc)
     get_aspirations_data(student_doc)
     get_social_media_links_data(student_doc)
-    add_student_to_array
+    add_student_to_array(student_id)
     create_student
   end
 
@@ -91,9 +93,10 @@ class Scrape
   end
 
 
-  def add_student_to_array # aggregate the data of one student and add the entire student to an array
+  def add_student_to_array(student_id) # aggregate the data of one student and add the entire student to an array
     student_hash = {
       @name_data.to_sym => {
+        :student_id => student_id,
         :bio => @bio_data,
         :aspirations => @aspirations_data,
         :social_media_links => @social_media_links_data
@@ -187,13 +190,20 @@ class Student
     name = gets.strip
   end
 
-  def self.find
+  def self.find_anthony
     @@db.execute( "SELECT #{self.column_select_find}
                    FROM (#{@tableName})
                    WHERE name='#{self.name_select_find}'" ) do |row|
       puts "----------------------------------------"
       puts row
     end
+  end
+
+  def self.find_by_name(name)
+    database_return = @@db.execute( "SELECT name
+                         FROM (#{@tableName})
+                         WHERE name='#{name}'" )
+    database_return[0][0]
   end
 
   def self.flush_database
@@ -210,15 +220,23 @@ class Student
   self.flush_database
 
 
-  def initialize(student_data)
-    @name, @bio, @aspirations, @social_media_links = student_data
+  def initialize(student_data=[[],[],[],[]])
+    if student_data[0].length != 0
+      @name, @bio, @aspirations, @social_media_links = student_data
+      self.save
+    else
+    end
     self.class.all << self
-    self.save
   end
 
   def save
+    if self.social_media_links != nil
     @@db.execute(
       "INSERT INTO students (name, bio, aspirations, social_media_links) VALUES (?, ?, ?, ?)", [self.name, self.bio, self.aspirations, self.social_media_links.values.join(",")])
+    else
+   @@db.execute(
+     "INSERT INTO students (name, bio, aspirations, social_media_links) VALUES (?, ?, ?, ?)", [self.name, self.bio, self.aspirations, self.social_media_links])
+    end
   end
 
 
@@ -270,4 +288,4 @@ end
 # Run it #
 scrape = Scrape.new
 scrape.run
-Student.find
+Student.find_anthony
